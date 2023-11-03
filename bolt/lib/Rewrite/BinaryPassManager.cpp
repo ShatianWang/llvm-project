@@ -11,6 +11,7 @@
 #include "bolt/Passes/Aligner.h"
 #include "bolt/Passes/AllocCombiner.h"
 #include "bolt/Passes/AsmDump.h"
+#include "bolt/Passes/CDSplit.h"
 #include "bolt/Passes/CMOVConversion.h"
 #include "bolt/Passes/FixRISCVCallsPass.h"
 #include "bolt/Passes/FixRelaxationPass.h"
@@ -423,6 +424,11 @@ void BinaryFunctionPassManager::runAllPasses(BinaryContext &BC) {
   // also happen after any changes to the call graph are made, e.g. inlining.
   Manager.registerPass(
       std::make_unique<ReorderFunctions>(PrintReorderedFunctions));
+
+  /// This pass reruns function splitting after function reordering
+  Manager.registerPass(std::make_unique<CDSplit>(PrintSplit));
+
+  Manager.registerPass(std::make_unique<FixupBranches>(PrintAfterBranchFixup));
 
   // Print final dyno stats right while CFG and instruction analysis are intact.
   Manager.registerPass(
